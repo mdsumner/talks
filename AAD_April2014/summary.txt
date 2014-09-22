@@ -1,0 +1,9 @@
+R tools to access multi-dimensional grid data (e.g. satellite data
+like SST, Chl-a, sea ice concentration, etc.). 
+
+The discussion includes: 
+- general howto and use of the tools
+- the importance of map projections and some adventures in working
+  around incomplete or inconsistent metadata
+- building extensible tools for extracting data
+- providing the tools as services in an open development environment

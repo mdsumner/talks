@@ -1,0 +1,13 @@
+\frametitle{Finding help with R}
+
+\begin{itemize}
+ \item
+\item there's an \textbf{R for Dummies} book
+\item The R Inferno, gotchas for R users \url{http://www.burns-stat.com/documents/books/the-r-inferno/}
+ \item R on \url{http://stackoverflow.com}
+ \item do read and use the mailings lists \url{http://www.r-project.org/mail.html}
+ \item Task Views on CRAN, for domain-specific materials \url{http://cran.csiro.au/web/views/}
+ \item Contributed docs \url{http://cran.csiro.au/other-docs.html}
+ \item re-read the FAQs \url{http://cran.csiro.au/faqs.html}
+\item \textbf{sos} package
+\end{itemize}

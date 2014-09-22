@@ -1,0 +1,18 @@
+Northern hemisphere snow cover extent
+==========================================================
+
+I was asked how to access data from here:
+
+![alt text][thredds]
+
+
+[thredds]: thredds.png "Thredds server"
+
+
+Northern hemisphere snow cover extent
+
+
+
+![alt text][conformal]
+
+[conformal]: Conformal.png "Conformal"

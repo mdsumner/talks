@@ -1,0 +1,43 @@
+Shiny
+
+main requirement is the server, requires a shared network resource
+
+Basic version
+
+http://147.66.192.52/shiny/mdsumner/basictest/
+
+edit:  headerPanel(R.version$version.string)
+edit: add another slider for bins
+ 
+Simple app to load NSIDC sea ice data
+
+http://147.66.192.52/shiny/mdsumner/NSIDC_daily/
+
+RStudio server
+http://spark.rstudio.com:8787/
+
+
+help.search("panel", package = "shiny")
+ 
+
+\\147.66.192.52\shiny-apps\mdsumner\basictest
+
+## basic model is 
+
+build UI component
+
+associate R function with that component
+
+http://147.66.192.52/shiny/mdsumner/basictest/
+ 
+edit:  headerPanel(R.version$version.string)
+edit: add another slider for bins
+
+
+Less simple app
+http://147.66.192.52/shiny/mdsumner/attribute06/
+
+
+RStudio server
+http://spark.rstudio.com:8787/
+http://spark.rstudio.com/aad/aad1/

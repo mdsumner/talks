@@ -1,0 +1,83 @@
+
+\documentclass{beamer}
+\usepackage{url}
+%  \let\oldfootnotesize\footnotesize
+%  \renewcommand*{\footnotesize}{\oldfootnotesize\tiny}
+ %%\renewcommand*{\footnotesize}{\oldfootnotesize\scriptsize}
+
+\begin{document}
+
+<<setup, include=FALSE>>=
+ # smaller font size for chunks
+ opts_chunk$set(size = 'footnotesize')
+@
+
+\title{R spatial, Michael Sumner}
+
+\maketitle
+
+\begin{frame}
+\frametitle{Outline}
+\tableofcontents
+\end{frame}
+
+\section{Spatial tools in R}
+ \begin{frame}
+  \frametitle{R tools for handling spatial data, gridded and vector}
+ \begin{itemize} 
+   \item traditionally a loose set of tools for spatial data
+   \item prior to 2005 no serious organization outside of individual packages
+   \item new classes (sp, raster, others) and tools for transforming between the variety of classes
+   \item much more powerful but in some ways more complicated, since it all relies on extension packages
+ \end{itemize} 
+ \end{frame}
+
+\begin{frame}
+ \frametitle{Traditional R}
+ \begin{itemize} 
+   \item packages base, graphics, fields, spatial
+   \item Data stored as point coordinates with attributes, data.frame, matrix, list
+   \item vectors
+   \item "atomic" vectors, character, complex, numeric, integer, logical, numeric, complex, raw, NULL
+   \item "recursive" vectors, lists, expressions
+   \item matrices and arrays, atomic vectors with dimension
+   \item indexing with [ and [[
+   \item Plotting engines base, grid, lattice
+   \item plot, points, lines, polygon
+   \item image, levelplot, persp, wireframe
+ \end{itemize}
+\end{frame}
+
+\begin{frame}
+ \frametitle{Current day tools}
+  \begin{itemize}
+    \item all the above still
+    \item more advanced tools in spatstat, sp, raster;  uneasy marriage includes rgdal, maptools, rgeos, RNetCDF, ncdf/ncd4, maps/mapdata
+  \end{itemize}
+  
+ Detailed and entertaining overview of Spatial in R:
+ 
+\url{http://www.maths.lancs.ac.uk/~rowlings/Teaching/UseR2012/}
+ 
+ 
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+  \frametitle{Finding help with R}
+
+\begin{itemize}
+ \item 
+\item there's an \textbf{R for Dummies} book
+\item The R Inferno, gotchas for R users \url{http://www.burns-stat.com/documents/books/the-r-inferno/}
+ \item R on \url{http://stackoverflow.com}
+ \item do read and use the mailings lists \url{http://www.r-project.org/mail.html}
+ \item Task Views on CRAN, for domain-specific materials \url{http://cran.csiro.au/web/views/}
+ \item Contributed docs \url{http://cran.csiro.au/other-docs.html}
+ \item re-read the FAQs \url{http://cran.csiro.au/faqs.html}
+\item \textbf{sos} package 
+\end{itemize}
+\end{frame}
+ 
+\end{document}

@@ -1,0 +1,24 @@
+R AAD Tools - read / extract
+
+
+readchla: weekly/monthly, SeaWIFS/MODIS, oceancolor/Robert Johnson
+
+readcurrents: weekly AVISO surface currents
+
+readice: daily/monthly, NSIDC/SSMI, southern hemisphere
+
+readssh: weekly Sea Surface height/anomaly, global
+
+readsst: daily/monthly SST, global
+
+readwind: weekly surface wind vectors, global
+
+readtopo: Gebco 2008, IBCSO, Etopo1/2, Kerguelen, George V Terre Adelie, Smith and Sandwell
+
+readfastice: East Antarctic Fast Ice Coverage, 2000-2008
+
+readfronts: weekly Sokolov/Rintoul frontal regions
+
+readmld: montly climatology Sallee mixed layer depth, Southern Ocean
+
+readrapid_response: daily RGB MODIS image, southern hemisphere
