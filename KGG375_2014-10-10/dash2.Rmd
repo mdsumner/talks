@@ -1,9 +1,8 @@
 ---
 title: "Mapping tips"
-author: Michael Sumner, AAD
-date: "5 September 2014"
-output: 
-    ioslides_presentation
+author: Michael Sumner, AAD (presented by Steve Harwin)
+date: "14 October 2014"
+output: ioslides_presentation
 ---
 
 ```{r,eval=TRUE,echo=FALSE,message=FALSE}
@@ -14,11 +13,6 @@ library(rgeos)
 library(rgdal)
 ```
 
-## Why?
-
-- gotchas abound
-- there's more than one way to do it
-
 ## Summary
 
 - plotting data on a map
@@ -27,6 +21,7 @@ library(rgdal)
 - scaling plots by data value
 - GDAL raster manipulation
 - build the same map in QGIS
+- there's more than one way to do it
 
 ## Raw data 
 ```{r}
@@ -293,6 +288,15 @@ points(xy, cex = scl(sqrt(szt$Al)) * 1.5 + 1)
 par(op)
 ```
 
+## Prepare shapefiles for QGIS
+
+```{r,eval=FALSE}
+writeOGR(oz, "shp", "oz", "ESRI Shapefile")
+writeOGR(ant, "shp", "ant", "ESRI Shapefile")
+writeOGR(nz, "shp", "nz", "ESRI Shapefile")
+
+```
+
 ## QGIS / GDAL 
 
 - Use GDAL to regrid Etopo2 for background in efficient format
@@ -311,11 +315,9 @@ gdal_translate ETOPO2v2c_f4.nc etopo_sh_015.tif \
  -co TILED=YES -co COMPRESS=LZW
 ```
 
-- open gdalinfo screendump
-
 ## GDAL
 
-![alt text](images/etopoconvert2.png)
+![alt text](images/gdalinfo2.png)
 
 
 ## QGIS
@@ -339,20 +341,11 @@ GDAL: www.gdal.org
 
 OSGEO installer for Windows: http://trac.osgeo.org/osgeo4w/
 
-Better R data and graphics: dplyr and ggvis
-
-## Future Topics
-- GIS data structures
-- Cropping / editing polygons
-- Problems with Antarctica world shape
-- Rasterizing polygons and lines
-- Coercion between classes
-- Interpolating from irregular data (Y~X, Depth~Lat, etc.)
-- Tools for tracking data
-- Calculating distance, distance-to-stuff
-- Projections - sinusoidal, circumpolar, conformal conic, ...
-- Drawing graticules (lon-lat lines)
-
 mdsumner@gmail.com
+
+michael.sumner@aad.gov.au
+
 Australian Antarctic Division
+
+stephen.harwin@utas.edu.au
 

@@ -1,0 +1,300 @@
+---
+title: "NetCDF - Low Level usage in R"
+author: Michael.Sumner@aad.gov.au
+output: 
+    ioslides_presentation:
+    css: myslides.css
+---
+
+## R packages for NetCDF
+
+- RNetCDF
+- ncdf 
+- ncdf4
+- rgdal
+
+
+```{r,echo=FALSE}
+library(RNetCDF)
+f <- "avhrr-only-v2_20140301.nc"
+dp <- "~/ncdata"
+```
+
+## Typical session
+
+```{r, eval=FALSE}
+dp <- "~/ncdata"
+f <- "avhrr-only-v2_20140301.nc"
+library(RNetCDF)
+nc <- open.nc(file.path(dp, f))
+print.nc(nc)
+## do other stuff
+close.nc(nc)
+```
+
+```{r,echo=FALSE,eval=FALSE}
+dp <- "~/ncdata"
+f <- "avhrr-only-v2_20140301.nc"
+library(RNetCDF)
+nc <- open.nc(file.path(dp, f))
+sink(sprintf("%s", gsub(".nc$", ".txt", f)))
+print.nc(nc)
+sink(NULL)
+## do other stuff
+close.nc(nc)
+```
+
+Source file has variables **sst** as well as **anom**, **err**, and **ice**. 
+
+Daily sea surface temperature, Reynolds, et al.(2007) Daily High-resolution Blended Analyses. 
+
+[avhrr-only-v2_20140301.ncdump](avhrr-only-v2_20140301.txt)
+
+
+
+## Now what? 
+
+Proceed with gay abandon. (Beware of large variables.)
+
+```{r}
+nc <- open.nc(file.path(dp, f))
+lons <- var.get.nc(nc, "lon")
+lats <- var.get.nc(nc, "lat")
+dat <- var.get.nc(nc, "sst")
+range(dat, na.rm = TRUE)
+```
+
+- It's rarely simple.
+- Inspect output of ncdump.
+- Check data ranges, orientation, missing values. 
+- Code can interrogate **attributes** (the metadata) for sophisticated automation.
+
+## Checks and visualization
+
+Extremely important for checking assumptions/results. 
+
+```{r}
+m <- matrix(c(1, 2), 1, 2); layout(m)
+plot(lons)
+plot(lats)
+```
+
+## Visualization
+
+Image of the raw matrix. 
+
+```{r}
+image(dat)
+```
+
+
+
+## Reading subsets
+
+```{r}
+xindex <- which(lons >= 130 & lons <= 190)
+yindex <- which(lats >= -65 & lats <= -20)
+lons2 <- var.get.nc(nc, "lon", start = xindex[1], count = length(xindex))
+lats2 <- var.get.nc(nc, "lat", start = yindex[1], count = length(yindex))
+```
+
+```{r}
+## WATCH OUT - degenerate dimensions (starts at 1, has length 1)
+indexstart <- c(xindex[1], yindex[2], 1, 1)
+indexcount <- c(length(xindex), length(yindex), 1, 1)
+dat2 <- var.get.nc(nc, "sst", start = indexstart, count = indexcount)
+```
+
+## Visualization
+
+```{r}
+d <- list(x = lons2, y = lats2, z = dat2)
+image(d)
+```
+
+## Bumps in the road
+
+- multiple variables in one file, or across files
+
+```{r}
+## horizontal and vertical components of velocity
+fu <- "uwnd.10m.gauss.2013.nc"
+fv <- "vwnd.10m.gauss.2013.nc"
+
+unc <- open.nc(file.path(dp, fu))
+## should check the "v" file has the same stuff
+vnc <- open.nc(file.path(dp, fv))
+```
+
+Daily Forecast of U[V]-wind at 10 m, NCEP/DOE AMIP-II Reanalysis (Reanalysis-2) Daily Averages. 
+
+## Bumps in the road
+
+- latitude top-down (was bottom-up for SST)
+- longitude is Pacific-view (could be Atlantic [-180, 180]) 
+
+```{r}
+lons <- var.get.nc(unc, "lon"); lats <- var.get.nc(unc, "lat")
+layout(matrix(c(1, 2), 1, 2)); plot(lons); plot(lats)
+```
+
+
+## Dimensions and subset
+
+```{r}
+timeind <- 10
+## U, V with dimensions [longitude, latitude, time]
+indexstart <- c(1, 1, 1, timeind)
+indexcount <- c(length(lons), length(lats), 1, 1)
+uwnd <- var.get.nc(unc, "uwnd", 
+                   start = indexstart, count = indexcount)
+vwnd <- var.get.nc(vnc, "vwnd", 
+                   start =indexstart, count = indexcount)
+
+```
+
+## Scaling
+
+```{r}
+## uwnd:missing_value = 32766 ;
+## uwnd:add_offset = 207.65 ;
+## uwnd:scale_factor = 0.01 ;
+   
+## scaling from integer values (saves space, preserves precision)
+uwnd <- uwnd * 0.01 + 207.65
+vwnd <- vwnd * 0.01 + 207.65  ## best check they really are the same
+
+##     time:units = "hours since 1800-1-1 00:00:0.0" ;
+##     time:delta_t = "0000-00-01 00:00:00" ;
+epoch <- ISOdatetime(1800, 1, 1, 0, 0, 0, tz = "GMT")
+time <- var.get.nc(unc, "time") * 3600 + epoch
+```
+
+## Visualization 
+
+Note top-down orientation: 
+
+- reverse latitudes
+- reverse order of columns. 
+- 
+```{r,echo=FALSE,message=FALSE}
+library(sp);library(maptools)
+```
+
+```{r,eval=FALSE,echo=TRUE}
+wspd <- sqrt(uwnd^2 + vwnd^2)[,ncol(uwnd):1]
+image(lons, rev(lats), wspd)
+title(format(time[timeind]))
+library(maps);map("world2", add = TRUE)
+```
+
+## Visualization
+
+
+```{r,eval=TRUE,echo=FALSE}
+wspd <- sqrt(uwnd^2 + vwnd^2)[,ncol(uwnd):1]
+image(lons, rev(lats), sqrt(uwnd^2 + vwnd^2)[,ncol(uwnd):1])
+title(format(time[timeind]))
+library(maps);map("world2", add = TRUE)
+```
+
+## Obstacles 
+
+- Juggling file connections
+- Discovery of names
+- Internal conventions for orientation, organization
+- Scaling to real values
+- Handling missing values
+- Extremely low-level interface
+
+
+
+## UI differences in packages
+
+Open, get variable, attribute inquiry, print: same things different names
+
+- RNetCDF: open.nc, var.get.nc, att.get.nc, print.nc
+- ncdf:   open.ncdf, get.var.ncdf, att.get.ncdf, print.ncdf
+- ncdf4:  nc_open, ncvar_get, ncatt_get, print.ncdf4
+
+(Also *write*, *copy*, *put*, *rename*, *delete*, etc.)
+
+Interface for GDAL is pretty different. 
+
+- rgdal:  GDAL.open, "[-methods", GDALinfo
+
+## R packages for NetCDF
+
+RNetCDF, ncdf, ncdf4, rgdal
+
+Which is best? Depends: 
+
+- how package/s built (source, CRAN binaries, distro binaries, etc.)
+- inter-related with HDF4/5, OpenDAP, Thredds, compilers, etc. 
+- important especially if you need to **write** NetCDF
+
+No CRAN binary provides NetCDF-4. 
+
+None read some NetCDF-4 models, such as HDF-like groups. 
+
+We need a new-generation R NetCDF package, built via SWIG, Rcpp, ? 
+
+
+## High-level in R
+
+Read with full interpretation, crop. 
+
+```{r,eval=FALSE}
+library(raster)
+## lonmin, lonmax, latmin, latmax
+ex <- extent(130, 190, -65, -20)
+sst <- crop(raster("avhrr-only-v2_20140301.nc"), ex, snap = "out")
+## apply the same to "anom" variable
+anom <- crop(raster("avhrr-only-v2_20140301.nc", varname = "anom"), 
+             ex, snap = "out")
+```
+
+## Raster package
+
+```{r}
+library(raster)
+r <- sqrt(raster(file.path(dp, fu))^2 + raster(file.path(dp, fv))^2)
+plot(r, col = heat.colors(25, alpha = 0.75))
+title("wind speed (m/s)")
+```
+
+## Taking it a step further 
+
+Leveraging the *raster* package with interpretation of variables, levels, time steps, missing  values, scaling/offset, we add query by date and simple options against controlled collections. 
+
+```{r,eval=FALSE}
+library(raadtools)
+sst <- readsst(time[timeind])
+windmag <- readwind(time[timeind], lon180 = TRUE, magonly = TRUE)
+##plot(sqrt(x[[1]]^2 + x[[2]]^2), col = heat.colors(25))
+plot(windmag, col = heat.colors(25, alpha = 0.75))
+contour(sst, add = TRUE, col = "white")
+library(maptools)
+data(wrld_simpl)
+plot(wrld_simpl, add = TRUE)
+```
+
+ (shameless plug for in-development AAD/ACE project *raadtools*)
+
+
+
+##  Wind magnitude with SST contours
+
+```{r,eval=TRUE,echo=FALSE}
+library(raadtools)
+sst <- readsst(time[timeind])
+windmag <- readwind(time[timeind], lon180 = TRUE, magonly = TRUE)
+##plot(sqrt(x[[1]]^2 + x[[2]]^2), col = heat.colors(25))
+plot(windmag, col = heat.colors(25, alpha = 0.75))
+contour(sst, add = TRUE, col = "white")
+library(maptools)
+data(wrld_simpl)
+plot(wrld_simpl, add = TRUE)
+```
+
+

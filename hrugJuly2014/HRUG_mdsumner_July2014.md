@@ -284,7 +284,7 @@ Johnson, R., Strutton, P. G., Wright, S. W., McMinn, A., & Meiners, K. M. (2013)
 
 Johnson-algorithm chlorophyll-a data
 ========================================================
-![plot of chunk unnamed-chunk-10](HRUG_mdsumner_July2014-figure/unnamed-chunk-10.png) 
+![plot of chunk unnamed-chunk-10](HRUG_mdsumner_July2014-figure/unnamed-chunk-10-1.png) 
 
 
 R Tools - data extraction from "slabs"
@@ -409,7 +409,7 @@ x <- readice("2013-06-15")
 plot(x)
 ```
 
-![plot of chunk unnamed-chunk-17](HRUG_mdsumner_July2014-figure/unnamed-chunk-17.png) 
+![plot of chunk unnamed-chunk-17](HRUG_mdsumner_July2014-figure/unnamed-chunk-17-1.png) 
 
 ```r
 print(projection(x))

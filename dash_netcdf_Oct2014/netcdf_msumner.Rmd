@@ -1,0 +1,57 @@
+---
+title: "NetCDF"
+output: ioslides_presentation
+---
+
+## NetCDF
+
+Examples, commonly of interest, quirky examples
+
+
+### Etopo1
+
+http://www.ngdc.noaa.gov/mgg/global/global.html
+
+
+SST from Aviso
+Argo example  http://www.usgodae.org/argo/argo.html
+
+- Etopo data
+- Aviso currents
+- NCEP winds
+- Rob's chlorophyll-a
+- Reynolds SST
+- interplay with GIS
+- commonly -180/180 vs 0-360, but Oscar was different again
+- non-regular grids, e.g. BRAN
+-- CMIP5 vertices of cells in longlat
+-- NASA's old L3bin and SMI HDF
+-- NASA's new NetCDF-4 format
+- relation of OpenDAP/Thredds
+
+
+Tools
+- nco
+- Fortran, Perl, Python, Matlab, R, C++
+- Panoply, Rob's list
+- ferret
+- CSIRO Olive "dive"
+- GIS, via GDAL, independent
+- conventions, software chains
+
+
+
+How does NetCDF work? 
+ - internal structure - dims/vars/attributes
+ - really simple, then super complex
+
+
+ Case study
+  - at least two environments
+   - python, R, matlab, QGIS, ??
+   - plot a map, geoferenced
+  - some projection, extra layers
+  - upscale to an animation
+  
+
+

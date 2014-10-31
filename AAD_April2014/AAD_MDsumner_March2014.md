@@ -84,12 +84,10 @@ topo <- crop(raster("Etopo2.tif"), bb)
 topo[topo > -1] <- NA
 ```
 
-
 ```r
 polys <- readOGR(".", "SSRUs")
 polys$meantopo <- extract(topo, polys, fun = mean, na.rm = TRUE)
 ```
-
 
 
 ```r
@@ -100,7 +98,6 @@ incl <- !is.na(polys$meantopo)
 plot(polys[incl,], add = TRUE, col = "#333333333B3")
 text(coordinates(polys)[incl,], lab = format(polys$meantopo[incl], digits = 5), cex = 0.7)
 ```
-
 </small>
 <small>
 Example: Etopo2 and aggregated depth values
@@ -127,7 +124,6 @@ polys <- readOGR(".", "PolygonShapefile")
 ## matrix of [polyID,weeks]
 (sstmatrix <- extract(sst, polys, fun = mean))
 ```
-
 </small>
 ![alt text][reynoldssummary]
 
@@ -149,7 +145,6 @@ fs <- file.path(dp, sp, files)
 
 icedata <- stack(fs)
 ```
-
 R AAD tools adds simplified helpers for rogue file collections:  
 
 ```r
@@ -157,7 +152,6 @@ library(raadtools)
 dates <- seq(as.Date("2013-07-19"), by = "1 week", length = 8)
 icedata <- readice(dates, product = "ssmi")
 ```
-
 </small>
 ![alt text][icedata]
 [icedata]: icedata.png "Ice data"
@@ -168,7 +162,6 @@ R AAD Tools - extensions to existing tools
 ```r
 (icedata <- readice(dates, product = "smmi"))
 ```
-
 
 The raadtools package provides
 - catalogue of available files in the repository
@@ -196,7 +189,6 @@ for (i in seq_along(levs)) {
     ## ...
 }
 ```
-
 </small>
 
 We probably can't load the entire time series first, and we probably shouldn't . . .
@@ -217,7 +209,6 @@ for (i in seq_along(levs)) {
   myPoints$ice[levs == levs[i]] <- vals
 }
 ```
-
 
 This is getting there but
 - cannot extract at longlat because the grid is in Polar Stereographic
@@ -240,7 +231,6 @@ library(raster)
 r <- raster("myMegaSplat.grd")
 extract(r, [query])
 ```
-
 Where, [query] is:
 - a data.frame/matrix of coordinates (must match projection of raster)
 - SpatialPoints\*, SpatialLines\*, SpatialPolygons\* (reprojection will be performed if required)
@@ -252,7 +242,6 @@ extract(x, query, fun = mean)
 
 extract(x, query, fun = function(x) dowhatever(x))
 ```
-
 - if raster is 2D, we get value/s for each point/line/polygon
 - if raster is 3D, we get a *matrix* of values for each point/line/polygon at each time step 
 
@@ -268,7 +257,6 @@ xyt <- c("long", "lat", "datetime")
 ## extract                                                                                              
 myPoints$iceconcentration <- extract(readice, myPoints[,xyt])
 ```
-
 ~~Geek alert: raadtools adds *methods* for the S4 *generic* raster::extract()~~
 
 We can do the same with other read functions, and provide options: 
@@ -281,7 +269,6 @@ myPoints$interpsst <- extract(readsst, myPoints[,xyt], ctstime = TRUE, method = 
 
 myPoints$regridSSHA <- extract(readssh, myPoints[,xyt], fact = 8, ssha = TRUE)
 ```
-
 
 This is *extensible*: by adding new functions we can use those, without rebuilding/reinstalling the package providing the extract method. 
 
@@ -328,7 +315,6 @@ R AAD Tools - data and projections
 
 
 <img src="AAD_MDsumner_March2014-figure/unnamed-chunk-15.png" title="plot of chunk unnamed-chunk-15" alt="plot of chunk unnamed-chunk-15" style="display: block; margin: auto;" />
-
 <small> ~~solid line is km-grid, dash line is graticule~~</small>
 
 NSIDC ice - a Polar projection
@@ -455,7 +441,6 @@ plot(xla, add = TRUE, legend = FALSE)
 plot(wla, add = TRUE)
 ```
 
-
 </small>
 
 
@@ -465,7 +450,6 @@ Work with the coordinate system as delivered, transform to/from the native proje
 
 <small>
 Not this! (Note, this approach looks the same in any language). 
-
 
 
 
@@ -486,8 +470,6 @@ close(fid)
 ##' area-cell or point-cell?
 ##' ?? ...
 ```
-
-
 
 </small>
 
@@ -543,7 +525,6 @@ shinyUI(pageWithSidebar(
   ),
     mainPanel(plotOutput("rasterPlot"))))
 ```
-
 </small>
 
 Deploy on a server 
@@ -559,9 +540,7 @@ library(shiny)
 dp <- "//aad.gov.au/files/Transfer"
 
 runApp(file.path(dp, "shinyrun"))
-
 ```
-
 </small>
 
 
@@ -573,7 +552,6 @@ Extract data for points with Shiny app
 library(shiny)
 runApp("shinyExtract")
 ```
-
 ![alt text][shinyApp0]
 
 
@@ -661,7 +639,6 @@ readpolar <- function(date,  time.resolution = "weekly", xylim = NULL, returnfil
     
     }
 ```
-
 </small></small>
 
 Structure of read functions (2)
@@ -669,7 +646,6 @@ Structure of read functions (2)
 <small><small>
 
 ```r
-  
   ## readpolar <- function(date,  time.resolution = "weekly", xylim = NULL, returnfiles = FALSE, ...) {
 
   ## cont.
@@ -699,8 +675,6 @@ Structure of read functions (2)
     names(r) <- sprintf("polar_%s", format(files$date, "%Y%m%d"))
     setZ(r, files$date)
 }
-
 ```
-
 </small></small>
 
