@@ -1,0 +1,123 @@
+---
+title: "3 SQL use cases - GIS, NetCDF and dplyr"
+author: "Michael Sumner"
+date: "09/05/2015"
+output: html_document
+---
+
+Structured Query Language (SQL) is extremely versatile and is available in a wide
+range of software environments. Its main strengths are 
+
+Here we build three use cases to illustrate the breadth of application. 
+
+# GIS intersection queries
+
+SQL is a fairly standard way of working with GIS data, also available in GDAL/OGR and QGIS, and databases with spatial extensions (SQL Server, PostGIS/PostgreSQL, Oracle, Spatialite, Access (PGDB)). 
+
+The tasks is to classify interesting marine areas for mineral exploitation, we want to cross-tabulate areas of the marine environment by seafloor depth, arbitration zones, and habitat zones. 
+
+Here we import a standard topography data set Etopo2 into Manifold as a surface, and apply its georferencing metadata. 
+
+- rename to Etopo2
+- set georeferencing (offsets slightly out because of NetCDF centre/corner ambiguity)
+- untick "shading"
+
+We like to work in a sensible map projection, so first crop to our extents in the Southern Ocean and reproject. 
+
+We can select pixels and crop using the UI, but we choose SQL instead for the selection. 
+
+```{sql,eval=FALST}
+UPDATE [Etopo2] SET [Selection (I)] = True WHERE [Latitude (I)] <= -40; 
+```
+
+Use TransformWith script?
+
+
+Create a map with the topography and choose a projection, once we are happy we can apply the projection to the data. 
+
+Contour the bathymetry into a range of depth classes. 
+
+-200
+-500, 
+-1000
+-2000
+-3000
+
+Now we need our habitat and political layers. 
+
+Walrus - draw some on, call them Walrus1-4 for eg.
+
+CCAMLR - delete all columns bar asdlabel
+
+
+Use Identity or Intersect?
+
+Need to simplify the topo data first.
+
+Finally we have a single query to cross tabulate our habitat and political zones by bathymetry class: 
+
+```{sql,eval=FALSE}
+TRANSFORM Sum([Area (I)])/1e6   SELECT [Walrus], [asdlabel] FROM [Subareas Drawing 3] GROUP BY [Walrus], [asdlabel]  PIVOT [Depth] 
+```
+
+# NetCDF data model
+
+```{r}
+library(raadtools)
+cfiles <- subset(currentsfiles(), date > (Sys.time() - 365.25 * 24 * 3600))
+
+i <- 1
+library(RNetCDF)
+nc <- open.nc(cfiles$fullname[i])
+## lon, lat, time shared by u and v
+library(dplyr)
+dm <- rep(NA_integer_, 3L)
+## u/v is lon, lat, time
+lon <- var.get.nc(nc, "lon")
+dm[1] <- length(lon)
+lon <- data_frame(lon = lon, id = seq_along(lon))
+lat <- var.get.nc(nc, "lat")
+dm[2] <- length(lat)
+lat <- data_frame(lat = lat, id = seq_along(lat))
+time <- var.get.nc(nc, "time")
+dm[3] <- length(time)
+time <- data_frame(time = time, id = seq_along(time))
+## tables are lon, lat, time, uv
+
+uv <- data_frame(u = as.vector(var.get.nc(nc, "u")), v = as.vector(var.get.nc(nc, "v")), 
+                 lon_id =  rep(lon$id, dm[2]), lat_id = rep(lat$id, each = dm[1]),  time_id = rep(i, prod(dm[1:2])))
+
+test <- inner_join(inner_join(inner_join(uv, lon, by = c("lon_id" = "id")), lat, by = c("lat_id" = "id")), time, by = c("time_id" = "id"))
+test1 <- test %>% filter(!is.na(u) & !is.na(v))
+## compare
+bu <- brick(cfiles$fullname[i], varname = "u")
+bv <- brick(cfiles$fullname[i], varname = "v")
+plot(sqrt(bu^2 + bv^2), col = topo.colors(25))
+scl <- function(x) (x - min(x, na.rm = TRUE))/diff(range(x, na.rm = TRUE))
+plot(test1$lon, test1$lat, pch = ".", col = topo.colors(25)[scl(sqrt(test1$u^2 + test1$v^2)) * 24 + 1])
+
+
+```
+
+```{r}
+d <- vector("list", nrow(cfiles))
+time <- vector("list", nrow(cfiles))
+for (i in seq(nrow(cfiles))) {
+  nc <- open.nc(cfiles$fullname[i])
+  uv <- data_frame(u = as.vector(var.get.nc(nc, "u")), v = as.vector(var.get.nc(nc, "v")), 
+                 lon_id =  rep(lon$id, dm[2]), lat_id = rep(lat$id, each = dm[1]),  time_id = rep(i, prod(dm[1:2])))
+  tval <- var.get.nc(nc, "time")
+  close.nc(nc)
+  uv <- uv %>% filter(!is.na(u) & !is.na(v))
+  d[[i]] <- uv
+  time[[i]] <-  data_frame(time = tval, id = i)
+  print(i)
+}
+
+d <- do.call(bind_rows, d)
+time <- do.call(bind_rows, time)
+
+test <- dw %>% filter(time_id == 1) %>%  inner_join(lon, by = c("lon_id" = "id")) %>% inner_join(lat, by = c("lat_id" = "id"))
+plot(test$lon, test$lat, pch = ".", col = topo.colors(25)[scl(sqrt(test$u^2 + test$v^2)) * 24 + 1])
+
+# dplyr
