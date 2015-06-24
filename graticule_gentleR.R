@@ -1,47 +1,3 @@
-library(raster)
-library(rgl)
-library(rglgris)
-## fast grid reduction
-smashimate <- function(x, smash) {dim(x) <- dim(x)/smash; x}
-
-## 1.2 Mb raster topography
-EtopoFile <- "http://staff.acecrc.org.au/~mdsumner/grid/Etopo20.Rdata"
-if (!file.exists(basename(EtopoFile))) download.file(EtopoFile, basename(EtopoFile), mode = "wb")
-load(basename(EtopoFile))
-## 14 Mb  RGB blue marble image
-bmfile <- "http://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73884/world.topo.bathy.200411.3x5400x2700.png"
-if (!file.exists(basename(bmfile))) download.file(bmfile, basename(bmfile), mode = "wb")
-bm <- setExtent(brick(basename(bmfile), crs = "+proj=longlat +ellps=WGS84"), extent(-180, 180, -90, 90))
-##plotRGB(bm)
-
-## ice files
-## 4 is reasonable, 10 very fast, 1 is no reduction
-sm <-smashimate(bm,4)
-## Raster brick with RGB at reduce resolution
-rs <- setValues(sm, extract(bm, coordinates(sm), method = "simple"))
-## colour map in rgl's index
-bmcols <- brick2col(rs)
-
-## build rgl object from our etopo/colour map, with Z's populated 
-## (homogenous coordinates in $vb, index in $ib - essentially t(xyzw))
-ro <- bgl(rs, z = Etopo20)  ## use Etopo20 for z
-proj <- "+proj=omerc +lonc=165 +lat_0=-22 +alpha=23 +gamma=23"
-
-  library(graticule)
-  l <- graticule(proj = proj)
-
-
-## check mesh for long segments
-mshlen <- function(vb, ib) {
-  len <- ncol(vb) 
-  lens <- numeric(len)
-  xms <-  matrix(vb[1, ib], nrow = 4)
-  yms <- matrix(vb[2, ib], nrow = 4)
-  xsd <- ( colSums(xms * xms) - (colSums(xms) ^ 2)/4) / 3
-  ysd <- ( colSums(yms * yms) - (colSums(yms) ^ 2)/4) / 3
-  pmax(xsd, ysd)
-}
-
 
 plan <- FALSE  ## projected plane or sphere?
 if (plan) {
@@ -97,7 +53,7 @@ nf <- basename(nfiles)
 
 s_ <- stack(sf)
 n_ <- stack(nf)
-i <- 9
+i <- 12
 #for (i in 1:1000) {
  ii <-  ((i - 1) %% 12) + 1
 vn <- values(n_[[ii]])
@@ -118,7 +74,7 @@ sbad <- is.na(vs) | !(vs > 0)
 sicecols <- grey(vs[!sbad]/100)
 sgl <- bgl(raster(s_[[1]]))
 if (!plan) {
- sqverts <- llh2xyz(cbind(project(t(sgl$vb[1:2, ]), projection(s_), inv = TRUE), 0))
+ sqverts <- llh2xyz(cbind(project(t(sgl$vb[1:2, ]), projection(s_), inv = TRUE), 10000))
 } else {
 sqverts <- cbind(project(project(t(sgl$vb[1:2, ]), projection(s_), inv = TRUE), proj), 0)
 }
@@ -135,7 +91,8 @@ l <- graticule(proj = if (plan) proj else NULL)
  for (i in seq(nrow(l))) {
 xy <- coordinates(as(l[i,], "SpatialPoints")) 
   if (!plan) {
-   xy <- llh2xyz(cbind(xy, 1000))
+   xy <- llh2xyz(cbind(xy, 20000))
 } 
 rgl.lines(cbind(xy, 1000), col = "white")}
 }
+
