@@ -1,0 +1,44 @@
+current role - Software Database Engineer
+Australian Antarctic Division and the Antarctic Climate and Ecosystems CRC
+
+Data and programming support for Ecosystem Modelling
+- current focus is on coupling ecosystem models with physical models of ocean circulation
+- requires a lot of automation manipulating all kinds of spatial formats and structures
+- polygons, transect lines, animal movement models, remote sensing data
+- inherently 3D and 4D data structures and models
+- ROMS, Atlantis, assessment
+
+Polar regions really benefit from using map projections
+- daily sea ice maps
+- many hidden tricks where GIS-grids stored in dumbed down structures
+
+Data library
+- synchronization tools to build collection of remote sensing data
+- R tools to read each type, simple as
+- readsst(date); readice(date) etc. 
+
+stereographic 3d plot
+
+mesh-based bathymetry 3d plot, showing different detail levels
+
+importance of map projections in polar use
+
+- ice concentration on polar grid
+- currents (were on Mercator, still very common)
+- assessment polygons (cross dateline)
+
+raadtools
+
+Nectar and data library
+
+habitat assessment
+
+..ACE_assessment/output_figures
+
+there's an R package for . . .
+
+GDAL
+GEOS
+GMT
+GRASS
+

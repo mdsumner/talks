@@ -1,0 +1,85 @@
+---
+title: "Remote-sensed oceanography data at the Australian Antarctic Division and Antarctic Climate and Ecosystems CRC"
+author: "Michael Sumner and Ben Raymond"
+date: "`r Sys.Date()`"
+output: ioslides_presentation
+---
+
+## Abstract
+
+
+1) What satellite ocean products you use; 
+2) Where you obtain the products; 
+3) Whether or not you use the uncertainty information in the product; 
+4) Any issues you have with the data product or service. 
+
+
+
+
+The Australian Antarctic Division and the Antarctic Climate and Ecosystems CRC make broad use of remote-sensed oceanography products from the Southern Ocean, including applications to areas such as species distribution and ecosystem modelling. To meet this common need, and to avoid duplication of effort across research groups, we provide a central repository of commonly-used data sets and an R package (raadtools) that provides access to those data products.
+The data repository is mirrored from a range of online sources, and kept up to date with regular, automatic downloads of new data. These sources are user-configurable and it is relatively straightforward to add new sources.
+The raadtools package provides an easy to use interface to a wide range of satellite data products, with a standardized read function on date-time, with other options. The implementation is straightforward for many data sources because they are understood by standard tools like GDAL, whereas others require more interpretation in the read function due to differing standards or alignment to conventions. Data are provided in high-level form with the basic geo-spatial and temporal metadata required for analyses and extraction, and there are generalized extraction routines for trajectory queries from any collection. Not all data streams come in regular longitude-latitude grids, and maintaining this original structure is a key feature of raadtools. In this talk I will present the experience and the process of registering and synchronizing a new data source. The talk will also touch on some of the limitations encountered between the worlds of GIS and physical modelling, and how the raadtools approach can be applied to lower level data streams.
+
+
+- overview of data available
+- admin workflow, add new data sources
+- user experience, Raster stuff, readslab, extractxyt
+- calculate temporal mean, reproject, extract track lines
+- issues, interest in L3Bin and lower
+- format changes, limited HDF support
+
+
+Altimetry-derived surface currents and surface height
+Passive microwave sea ice concentration
+Ocean colour products, 8-day Mapped and L3BIN RRs
+Optimally interpolated SST, MODIS SST
+bathymetry and topography (Smith and Sandwell, Etopo1, GEBCO, IBCSO)
+
+habitat assessment
+tools for coupling physical and biological models
+other projects using raadtools: 
+ high resolution ice imagery, ocean colour and heat flux  and ice concentration (polynyas) for elephant seal behaviours
+ ocean colour particle tracing for biodiversity predictions
+ coupling of animal tracking studies with environmental data
+
+# The raadtools system
+
+There are two main parts to the raadtools system
+
+1) *raadsync* a dataset registration system with tools (generic and custom) for automatic download of data
+2) *raadtools* a suite of functions built on the R raster/Spatial tools for reading datasets
+
+
+# raadsync
+
+The *raadsync* systems avoids duplication of effort in obtaining and archiving shared data sets
+
+Data archive is a mirror of the source, as much as possible we avoid duplicating or re-processing data into new formats. We  don't aspire to be an historical archive, we simply mirror the latest version of a dataset. 
+
+# raadtools
+
+The *raadtools* system provides a standard process for the main extraction methods used for remote sensing data.
+
+1) read grid map by date-time
+2) extract data by point-in-time (e.g. animal tracks)
+3) calculate temporal summaries (climatologies)
+
+# Example
+
+Installation of the raadsynch system and adding a new data set, running the synchronization
+
+# Example
+
+Creating a read function for the data set, use of the multi-date read, calculate means, also extract with xyt. 
+
+# Issues
+
+The new NetCDF4 format for ocean colour is not readable as-is, requires a custom tool that understands the existence of groups. 
+
+
+
+## Thank you
+
+![alt text][affil]
+[affil]: affil.png "affil"
+ 

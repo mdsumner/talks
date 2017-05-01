@@ -1,0 +1,11 @@
+.reveal {
+  font-size: 26px;
+}
+
+.reveal section img {
+    box-shadow: none;
+}
+
+.reveal pre code {
+  font-size: 1.0em;
+}

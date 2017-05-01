@@ -1,0 +1,37 @@
+---
+title: 'SQL: Changing values'
+author: "Michael Sumner"
+date: "2/15/2015"
+output: slidy_presentation
+---
+
+## Changing values with SQL
+
+Objective: Write queries that calculate new values for each selected record.
+
+```{sql, eval=FALSE}
+select reading - 32 from Survey where quant='rad';
+```
+
+```{sql, eval=FALSE}
+select taken, reading * 2 from Survey where quant='temp';
+```
+
+```{sql, eval=FALSE}
+select round(reading / 0.55, 2) from Survey where quant='temp';
+```
+
+
+
+## Slide with R Code and Output
+
+```{r}
+summary(cars)
+```
+
+## Slide with Plot
+
+```{r, echo=FALSE}
+plot(cars)
+```
+

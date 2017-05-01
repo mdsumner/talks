@@ -1,0 +1,109 @@
+---
+title: "raadtools coverage"
+author: "Michael Sumner"
+date: "8/17/2015"
+output: html_document
+---
+
+```{r}
+library(raadtools)
+
+fs <- list(sst = sstfiles(), 
+           seawifs = ocfiles(product = "SeaWiFS"), 
+           modisa = ocfiles(product = "MODISA"), 
+           ice_south = icefiles(),
+           ice_north = icefiles(hemisphere = "north"), 
+           current = currentsfiles(), 
+           ssh = sshfiles(), 
+           wind = windfiles())
+
+
+alldates <- lapply(fs, function(x) x$date)
+
+xlim <- ISOdatetime(1970, 1, 1, 0, 0, 0, tz = "GMT") + range(unlist(alldates))
+alldates <- lapply(fs, function(x) x$date)
+ord <- order(sapply(alldates, length))
+alldates <- alldates[ord]
+xlim[1] <- ISOdatetime(1970, 1, 1, 0, 0, 0, tz = "GMT")
+xlim[2] <- ISOdatetime(2020, 1, 1, 0, 0, 0, tz = "GMT")
+
+
+library(roc)
+sst <- readsst(latest = TRUE)
+
+sw <- readL3(tail(fs$seawifs$fullname, 2)[1])
+sw$chla <- chla(sw, sensor = "SeaWiFS", algo = "oceancolor")
+xy <- bin2lonlat(sw$bin_num, sw$NUMROWS)
+mo <- readL3(tail(fs$modisa$fullname, 1))
+mo$chla <- chla(mo, sensor = "MODISA", algo = "oceancolor")
+moxy <- bin2lonlat(mo$bin_num, mo$NUMROWS)
+
+sice <- readice(latest = TRUE)
+nice <- readice(latest = TRUE, hemisphere = "north")
+
+curr <- readcurr(latest = TRUE, magonly = TRUE)
+ssha <- readssh(latest = TRUE, ssha = TRUE)
+wind <- readwind(latest = TRUE, magonly = TRUE)
+
+```
+```{r,echo=FALSE,eval=FALSE}
+
+
+
+op <- par(mfrow = c(3, 3), mar = par('mar')/5)
+
+plot(sst, legend = FALSE, axes = FALSE, asp = 1)
+title(sprintf("%s\nsst", format(as.Date(getZ(sst)))), line = -2.5)
+
+
+plot(sice, axes = FALSE, legend = FALSE);
+
+title(sprintf("%s\nIce - south", format(getZ(sice))), line = -2.5)
+
+plot(nice, axes = FALSE, legend = FALSE)
+title(sprintf("%s\nIce - north", format(as.Date(getZ(nice)))), line = -2.5)
+
+
+plot(curr, col = sst.pal(100), legend = FALSE, axes = FALSE)
+title(sprintf("%s\nCurrent- mag", format(as.Date(getZ(curr)))), line = -2.5)
+
+plot(ssha, col = sst.pal(100), legend = FALSE, axes = FALSE)
+
+title(sprintf("%s\nSSH-a", format(as.Date(getZ(ssha)))), line = -2.5)
+
+plot(wind, col = sst.pal(100), legend = FALSE, axes = FALSE)
+
+title(sprintf("%s\nWind - mag", format(as.Date(getZ(wind)))), line = -2.5)
+
+
+##title(format(as.Date(getZ(sst))))
+plot(xy, pch = ".", col = chl.pal(sw$chla), axes = FALSE, 
+     asp = 1, xlim = c(-180, 180), ylim = c(-90, 90))
+
+title(sprintf("%s\nSeaWiFS chl-a", format(max(fs$seawifs$date))), line = -2.5)
+box()
+plot(moxy, pch = ".", col = chl.pal(mo$chla), axes = FALSE, 
+     asp = 1, xlim = c(-180, 180), ylim = c(-90, 90))
+
+title(sprintf("%s\nMODISA chl-a", format(max(fs$modisa$date))), line = -2.5)
+box()
+par(op)
+```
+
+==========================================================
+## Coverage in time
+```{r,echo=FALSE}
+plot(xlim, range(seq_along(fs)), type = "n", axes = FALSE,
+     xlab = "year", ylab = "")
+axis.POSIXct(1, xlim)
+axis(4, pos = xlim[2] - 4 * 365.25 * 24 * 3600, at = seq_along(fs), labels = names(fs)[ord], las = 1)
+abline(v = as.POSIXct(seq(as.Date("1980-01-01"), length = 4, by = "10 years")), col = "grey", lty = 2)
+for (i in rev(seq_along(alldates))) {
+  points(alldates[[i]], rep(i, length(alldates[[i]])), pch = ".")
+  ## points(alldates[[i]], rep(i, length(alldates[[i]]))+0.1, pch = ".")
+  
+  
+}
+abline(v = Sys.time(), lty = 2, col = "darkgrey")
+```
+

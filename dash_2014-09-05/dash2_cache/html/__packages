@@ -1,12 +1,6 @@
 base
-datasets
-grDevices
-graphics
 maptools
-methods
 raster
 rgdal
 rgeos
 sp
-stats
-utils

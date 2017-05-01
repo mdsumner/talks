@@ -232,6 +232,8 @@ help(readOGR)
 
 GDAL can read vector data from mostly **anywhere**, in R and QGIS.  
 
+This list (2014 here) keeps growing: 
+
 **Vector drivers**: <sup><sub>ARCGEN, AVCBin, AVCE00, AeronavFAA, BNA, CSV, CartoDB, CouchDB, DGN, DXF, EDIGEO, ESRI Shapefile, ElasticSearch, GFT, GME, GML, GMT, GPKG, GPSBabel, GPSTrackMaker, GPX, GeoJSON, GeoRSS, Geoconcept, Geomedia, HTF, Idrisi, Interlis 1, Interlis 2, KML, MSSQLSpatial, MapInfo File, Memory, NAS, ODBC, ODS, OSM, OpenAir, OpenFileGDB, PCIDSK, PDF, PDS, PGDump, PGeo, PostgreSQL, REC, S57, SDTS, SEGUKOOA, SEGY, SQLite, SUA, SVG, SXF, TIGER, UK .NTF, VFK, VRT, WAsP, WFS, Walk, XLSX, XPlane</sub></sup>
 
 ```{r,echo=FALSE,eval=FALSE}
@@ -314,6 +316,10 @@ gdal_translate ETOPO2v2c_f4.nc etopo_sh_015.tif \
  -outsize 20% 20%  \ 
  -co TILED=YES -co COMPRESS=LZW
 ```
+
+Etopo2 topography raster from 
+
+http://www.ngdc.noaa.gov/mgg/fliers/01mgg04.html
 
 ## GDAL
 

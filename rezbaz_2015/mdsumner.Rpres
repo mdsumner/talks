@@ -1,0 +1,311 @@
+R tools for remote sensing data
+========================================================
+author: Michael Sumner
+date: Feb 2015
+css: myslides.css
+Southern Ocean Ecosystem Change Program, Australian Antarctic Division
+
+michael.sumner@aad.gov.au
+
+![alt text][affil]
+[affil]: affil.png "affil"
+
+=========================================================
+## Remote sensing data in Antarctic ecosystem models
+
+![alt text][remotesensing]
+[remotesensing]: bigpicturemotivation.png "remotesensing"
+
+
+
+=========================================================
+## R AAD tools
+
+```{r setup, include=FALSE}
+library(knitr)
+opts_chunk$set(cache=TRUE)
+```
+R tools for **easy** use of time-series remote-sensing oceanographic data.
+
+- **raadtools** functions to read remote sensing data
+- **raadsync** functions to build and maintain file collection
+- (not on CRAN, need local set-up)
+
+Built on standard tools - R, sp, rgdal, raster, GDAL, NetCDF, HDF. 
+
+
+==========================================================
+## Access to synoptic data sets
+
+**raadtools** functions
+
+- **readcurr**: ocean surface current vectors
+- **readice**: sea ice concentration
+- **readssh**: sea surface height anomaly
+- **readsst**: sea surface temperature
+- **readwind**: surface wind vectors
+- **readchla**: phytoplankton via ocean colour
+- **readtopo**: topographic data, bathymetry and elevation
+
+System deployed on RStudio Server in the Nectar cloud. 
+
+==========================================================
+## Example 
+
+```{r}
+## read sea ice concentration data
+library(raadtools)
+dates <- c("2014-07-01", "2014-10-15", "2015-02-14")
+ice <- readice(dates)
+
+ice ## print summary of data object
+```
+
+```{r,eval=FALSE,echo=FALSE}
+png("ice.png", height = 360, width = 360 * 3); plot(ice, nc = 3);dev.off()
+```
+```{r,eval=FALSE}
+plot(ice)
+```
+
+![alt text][ice]
+[ice]: ice.png "ice"
+
+
+==========================================================
+## Coverage in space
+
+![alt text][spacecoverage]
+[spacecoverage]: plot_zoom_png.png "spacecoverage"
+
+```{r,eval=TRUE,echo=FALSE}
+library(raadtools)
+
+fs <- list(sst = sstfiles(), 
+           seawifs = ocfiles(product = "SeaWiFS"), 
+           modisa = ocfiles(product = "MODISA"), 
+           ice_south = icefiles(),
+           ice_north = icefiles(hemisphere = "north"), 
+           current = currentsfiles(), 
+           ssh = sshfiles(), 
+           wind = windfiles())
+
+
+alldates <- lapply(fs, function(x) x$date)
+
+xlim <- ISOdatetime(1970, 1, 1, 0, 0, 0, tz = "GMT") + range(unlist(alldates))
+alldates <- lapply(fs, function(x) x$date)
+ord <- order(sapply(alldates, length))
+alldates <- alldates[ord]
+xlim[1] <- ISOdatetime(1970, 1, 1, 0, 0, 0, tz = "GMT")
+xlim[2] <- ISOdatetime(2020, 1, 1, 0, 0, 0, tz = "GMT")
+
+
+library(roc)
+sst <- readsst(latest = TRUE)
+
+sw <- readL3(tail(fs$seawifs$fullname, 2)[1])
+sw$chla <- chla(sw, sensor = "SeaWiFS", algo = "oceancolor")
+xy <- bin2lonlat(sw$bin_num, sw$NUMROWS)
+mo <- readL3(tail(fs$modisa$fullname, 1))
+mo$chla <- chla(mo, sensor = "MODISA", algo = "oceancolor")
+moxy <- bin2lonlat(mo$bin_num, mo$NUMROWS)
+
+sice <- readice(latest = TRUE)
+nice <- readice(latest = TRUE, hemisphere = "north")
+
+curr <- readcurr(latest = TRUE, magonly = TRUE)
+ssha <- readssh(latest = TRUE, ssha = TRUE)
+wind <- readwind(latest = TRUE, magonly = TRUE)
+
+```
+```{r,echo=FALSE,eval=FALSE}
+
+
+
+op <- par(mfrow = c(3, 3), mar = par('mar')/5)
+
+plot(sst, legend = FALSE, axes = FALSE, asp = 1)
+title(sprintf("%s\nsst", format(as.Date(getZ(sst)))), line = -2.5)
+
+
+plot(sice, axes = FALSE, legend = FALSE);
+
+title(sprintf("%s\nIce - south", format(getZ(sice))), line = -2.5)
+
+plot(nice, axes = FALSE, legend = FALSE)
+title(sprintf("%s\nIce - north", format(as.Date(getZ(nice)))), line = -2.5)
+
+
+plot(curr, col = sst.pal(100), legend = FALSE, axes = FALSE)
+title(sprintf("%s\nCurrent- mag", format(as.Date(getZ(curr)))), line = -2.5)
+
+plot(ssha, col = sst.pal(100), legend = FALSE, axes = FALSE)
+
+title(sprintf("%s\nSSH-a", format(as.Date(getZ(ssha)))), line = -2.5)
+
+plot(wind, col = sst.pal(100), legend = FALSE, axes = FALSE)
+
+title(sprintf("%s\nWind - mag", format(as.Date(getZ(wind)))), line = -2.5)
+
+
+##title(format(as.Date(getZ(sst))))
+plot(xy, pch = ".", col = chl.pal(sw$chla), axes = FALSE, 
+     asp = 1, xlim = c(-180, 180), ylim = c(-90, 90))
+
+title(sprintf("%s\nSeaWiFS chl-a", format(max(fs$seawifs$date))), line = -2.5)
+box()
+plot(moxy, pch = ".", col = chl.pal(mo$chla), axes = FALSE, 
+     asp = 1, xlim = c(-180, 180), ylim = c(-90, 90))
+
+title(sprintf("%s\nMODISA chl-a", format(max(fs$modisa$date))), line = -2.5)
+box()
+par(op)
+```
+
+==========================================================
+## Coverage in time
+```{r,echo=FALSE}
+plot(xlim, range(seq_along(fs)), type = "n", axes = FALSE,
+     xlab = "year", ylab = "")
+axis.POSIXct(1, xlim)
+axis(4, pos = xlim[2] - 4 * 365.25 * 24 * 3600, at = seq_along(fs), labels = names(fs)[ord], las = 1)
+abline(v = as.POSIXct(seq(as.Date("1980-01-01"), length = 4, by = "10 years")), col = "grey", lty = 2)
+for (i in rev(seq_along(alldates))) {
+  points(alldates[[i]], rep(i, length(alldates[[i]])), pch = ".")
+  ## points(alldates[[i]], rep(i, length(alldates[[i]]))+0.1, pch = ".")
+  
+  
+}
+abline(v = Sys.time(), lty = 2, col = "darkgrey")
+```
+
+
+
+
+==========================================================
+## Flexible extraction  - spatial subset
+
+```{r,eval=FALSE,echo=TRUE}
+## spatial subset
+dates <- c("2014-06-20", "2014-09-21", "2015-01-22")
+x <- readsst(dates, xylim = extent(80, 150, -70, -30))
+x
+plot(x)
+```
+
+```{r,eval=TRUE,echo=FALSE}
+## spatial subset
+x <- readsst(dates, xylim = extent(80, 150, -70, -30))
+names(x) <- format(getZ(x))
+plot(x, nr = 3)
+```
+
+
+```{r,eval=FALSE,echo=FALSE}
+##==========================================================
+## Flexible extraction  - overlay points
+
+## standard R/raster point overlay
+pts <- cbind(long = c(120, 130, 160), lat = c(-65, -60, -40))
+dates <- c("2014-06-20", "2014-09-21", "2015-01-22")
+y <- readcurr(dates, xylim = extent(pts) + 10, magonly = TRUE)
+extract(y, pts)
+plot(y, addfun= function() points(pts), nr = 3)
+```
+
+==========================================================
+## Flexible extraction  - space-time overlay
+```{r,echo=FALSE}
+data(aurora)
+voyage <- aurora
+library(maps)
+res <- data.frame(date = voyage[,3], sst = extract(readsst, voyage, method = "bilinear"), 
+      ice = extract(readice, voyage, ctstime = TRUE))
+map(xlim = range(voyage[,1]) + c(-15, 15), ylim = range(voyage[,2]) + c(-5, 15), col = "grey", fill = TRUE)
+lines(voyage)
+
+```
+
+```{r}
+## extraction methods for "longitude", "latitude", "date-time"
+voyage$sst <- extract(readsst, voyage[,1:3])
+voyage$ice <- extract(readice, voyage[,1:3])
+```
+
+=================================================================
+```{r,echo=FALSE}
+##op <- par(mfrow = c(3, 1))
+layout(matrix(c(1, 2, 1, 3), ncol = 2))
+map(xlim = range(voyage[,1]) + c(-15, 15), ylim = range(voyage[,2]) + c(-5, 15), col = "grey", fill = TRUE)
+lines(voyage)
+plot(sst ~ DATE_TIME_UTC, data = voyage)
+plot(ice ~ DATE_TIME_UTC, data = voyage)
+##par(op)
+```
+
+==========================================================
+## Synchronizing file collection - (with Ben Raymond, AAD)
+
+The **raadsync** package provides a configuration for file sources with various methods for
+download (wget, ftp, custom)
+
+```{r,eval=FALSE}
+library(raadsync)
+cf <- read_repo_config("/data/admin/local_raadsync_config.json")
+cf$do_sync <- FALSE
+cf$do_sync[grep("Daily remote-sensing KD490 from SeaWiFS. ", cf$description)] <- TRUE
+sync_repo(cf)
+```
+```
+> Skipping dataset (do_sync is FALSE): CERSAT SSM/I sea ice concentration
+>  ...
+> Checking config for dataset: Oceandata MODIS Aqua Level-3 binned daily KD490 ... done.
+> Synchronizing dataset: Oceandata MODIS Aqua Level-3 binned daily KD490
+> ...
+> setting proxy variables ... done.
+> building file list ... done.
+> using custom handler "oceandata"
+ ... 
+>  decompressing: oceandata.sci.gsfc.nasa.gov/MODISA/L3BIN/2015/033/A2015033.L3b_DAY_KD490.main.bz2 ...  uncompressed file exists, skipping ... done
+>  decompressing: oceandata.sci.gsfc.nasa.gov/MODISA/L3BIN/2015/034/A2015034.L3b_DAY_KD490.main.bz2 ...
+
+```
+
+==========================================================
+## R AAD Tools
+
+- raadtools and raadsync, R tools for data extraction
+- Antarctic Division / Antarctic CRC
+- Marine Predator labs IMAS
+- beta tested by friends and colleagues
+
+TODO: 
+- streamline deployment of system
+- Shiny pages!
+
+Interested? 
+
+- Michael.Sumner@aad.gov.au AAD
+- Ben.Raymond@aad.gov.au Australian Antarctic Data Centre
+
+
+https://github.com/AustralianAntarcticDataCentre/raadsync
+
+https://github.com/mdsumner/raadtools
+
+
+
+
+==========================================================
+## Live demo
+
+
+[http://mike@nectar.rdsi/]( http://localhost:9000/)
+
+
+My personal Nectar machine
+- connected to shared file system on big storage (RDSI)
+- RAAD system installed in RStudio Server.  
+
+  

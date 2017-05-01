@@ -1,0 +1,40 @@
+R tools for geo-spatial time series data
+========================================================
+author: Michael Sumner
+date: Feb 2015
+css: myslides.css
+Southern Ocean Ecosystem Change Program, AAD
+michael.sumner@aad.gov.au
+
+![alt text][affil]
+[affil]: affil.png "affil"
+
+
+## R Markdown
+
+```{r setup, include=FALSE}
+library(knitr)
+opts_chunk$set(cache=TRUE)
+```
+
+R tools for easy extraction and data fusion from an extensive collection of time-series remote sensing oceanographic data.
+
+
+## Slide with Bullets
+
+- Bullet 1
+- Bullet 2
+- Bullet 3
+
+## Slide with R Code and Output
+
+```{r}
+summary(cars)
+```
+
+## Slide with Plot
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
