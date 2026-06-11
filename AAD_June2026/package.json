@@ -1,0 +1,11 @@
+{
+  "name": "zarr-talk",
+  "version": "1.0.0",
+  "description": "Modern data accessibility and virtualization — AAD June 2026",
+  "scripts": {
+    "build": "node zarr_talk.js"
+  },
+  "dependencies": {
+    "pptxgenjs": "^3.12.0"
+  }
+}
